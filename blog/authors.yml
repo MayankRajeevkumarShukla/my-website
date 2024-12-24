@@ -1,0 +1,10 @@
+admin:
+  name: Blog Admin
+  title: Creator
+  image_url: https://via.placeholder.com/150
+
+test-author:
+  name: Test Author
+  title: Contributor
+  url: https://example.com
+  image_url: https://via.placeholder.com/150

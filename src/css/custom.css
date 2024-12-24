@@ -1,0 +1,63 @@
+:root {
+  --ifm-color-primary: #67279D; /* Replaced with purple */
+  --ifm-color-primary-dark: #5a1e89; /* Darker shade of purple */
+  --ifm-color-primary-darker: #4e1776; /* Even darker purple */
+  --ifm-color-primary-darkest: #3f0f63; /* Darkest purple */
+  --ifm-color-primary-light: #7a2b9b; /* Lighter shade of purple */
+  --ifm-color-primary-lighter: #8a38a9; /* Lighter purple */
+  --ifm-color-primary-lightest: #9a45b7; /* Very light purple */
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --custom-font-family: 'Arial', sans-serif; /* Add a custom font variable */
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #7b41d3; /* Lighter purple for dark theme */
+  --ifm-color-primary-dark: #6c3bbf; /* Darker purple */
+  --ifm-color-primary-darker: #5e34ab; /* Even darker purple */
+  --ifm-color-primary-darkest: #4f2c98; /* Darkest purple */
+  --ifm-color-primary-light: #8c56d9; /* Lighter shade of purple */
+  --ifm-color-primary-lighter: #9c66e5; /* Light purple */
+  --ifm-color-primary-lightest: #b77af3; /* Very light purple */
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Blog post styling */
+.blog-post-title {
+  font-family: var(--custom-font-family);
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--ifm-color-primary-darker);
+}
+
+.blog-post-meta {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+/* Button styling */
+.button {
+  background-color: var(--ifm-color-primary);
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: var(--ifm-color-primary-dark); /* Updated hover to match the new color scheme */
+}
+
+/* Navbar and footer customization */
+.navbar {
+  background-color: var(--ifm-color-primary-darkest);
+}
+
+.footer {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 20px 0;
+}
