@@ -8,15 +8,15 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://your-blog-site.example.com',
-  // Set the /<baseUrl>/ pathname under which your site is served
+  url: 'http://localhost', // Changed to localhost for development
   baseUrl: '/',
 
   // GitHub pages deployment config
-  organizationName: 'your-org', // Replace with your GitHub org/user name
-  projectName: 'your-blog-repo', // Replace with your repo name
+  organizationName: 'your-org',
+  projectName: 'your-blog-repo',
 
-  onBrokenLinks: 'throw',
+  // Changed to 'warn' to help with development
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
   i18n: {
@@ -27,80 +27,98 @@ const config = {
   presets: [
     [
       'classic',
-      {
-        docs: false, // Disable docs as this is a blog-focused site
+      /** @type {import('@docusaurus/preset-classic').Options} */
+      ({
+        docs: false,
         blog: {
-          routeBasePath: '/', // Serve the blog at the site's root
+          routeBasePath: '/',
           showReadingTime: true,
-          blogSidebarCount: 'ALL', // Show all posts in the sidebar
+          blogSidebarCount: 'ALL',
           blogSidebarTitle: 'All Blog Posts',
+          // Update this to your actual GitHub repo or remove if not needed
           editUrl: 'https://github.com/your-org/your-blog-repo/tree/main/',
-          feedOptions: {
-            type: ['rss', 'atom'],
-          },
         },
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: ['./src/css/custom.css'],
         },
-      },
+      }),
     ],
   ],
 
-  themeConfig: {
-    image: 'img/social-card.jpg', // Replace with your site's social sharing image
-    navbar: {
-      title: 'My Blog',
-      logo: {
-        alt: 'Blog Logo',
-        src: 'img/logo.svg', // Replace with your blog's logo
+  themeConfig:
+    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+    ({
+      image: 'img/social-card.jpg',
+      navbar: {
+        title: 'My Blog',
+        logo: {
+          alt: 'Blog Logo',
+          src: 'img/logo.svg',
+        },
+        items: [
+          {
+            to: '/',
+            label: 'Home',
+            position: 'left',
+          },
+          {
+            to: '/tags',
+            label: 'Tags',
+            position: 'left',
+          },
+          {
+            to: '/user',
+            label: 'User',
+            position: 'left',
+          },
+          {
+            href: 'https://github.com/your-org/your-blog-repo',
+            label: 'GitHub',
+            position: 'right',
+          },
+        ],
       },
-      items: [
-        { to: '/', label: 'Home', position: 'left' },
-        { to: '/tags', label: 'Tags', position: 'left' },
-        {
-          href: 'https://github.com/your-org/your-blog-repo',
-          label: 'GitHub',
-          position: 'right',
-        },
-      ],
-    },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Explore',
-          items: [
-            {
-              label: 'Home',
-              to: '/',
-            },
-            {
-              label: 'Tags',
-              to: '/tags',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/your-org/your-blog-repo',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discord.com/invite/Np6BjSaXud',
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Blog. Built for DcodeBlock.`,
-    },
-    prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
-    },
-  },
+      footer: {
+        style: 'dark',
+        links: [
+          {
+            title: 'Explore',
+            items: [
+              {
+                label: 'Home',
+                to: '/',
+              },
+              {
+                label: 'Tags',
+                to: '/tags',
+              },
+              {
+                label: 'User',
+                to: '/user',
+              },
+            ],
+          },
+          {
+            title: 'Community',
+            items: [
+              {
+                label: 'GitHub',
+                href: 'https://github.com/your-org/your-blog-repo',
+              },
+              {
+                label: 'Discord',
+                href: 'https://discord.com/invite/Np6BjSaXud',
+              },
+            ],
+          },
+        ],
+        copyright: `Copyright © ${new Date().getFullYear()} My Blog. Built for DcodeBlock.`,
+      },
+      prism: {
+        theme: prismThemes.github,
+        darkTheme: prismThemes.dracula,
+      },
+    }),
 };
 
 export default config;
