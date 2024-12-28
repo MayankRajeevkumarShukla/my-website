@@ -30,30 +30,28 @@ function User() {
     };
 
     try {
-      const response = await fetch('/api/submit-blog', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(blogData),
+      const response = await fetch('http://localhost:5000/api/submit-blog', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(blogData),
       });
 
-      if (response.ok) {
-        alert('Blog submitted successfully for review!');
-        setName('');
-        setEmail('');
-        setTitle('');
-        setDomain('');
-        setTag('');
-        setContent('');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Error submitting the blog.');
+      if (!response.ok) {
+          const error = await response.json();
+          console.error('Submission error:', error.message);
+          alert(`Error: ${error.message}`);
+          return;
       }
-    } catch (error) {
-      setError('An unexpected error occurred. Please try again later.');
+
+      const data = await response.json();
+      console.log('Success:', data);
+      alert(data.message);
+  } catch (error) {
       console.error('Submission error:', error);
-    } finally {
+      alert('Something went wrong. Please try again.');
+  } finally {
       setIsSubmitting(false);
     }
   };
