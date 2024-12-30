@@ -26,7 +26,16 @@ const blogSchema = new mongoose.Schema(
         name: { type: String, required: true },
         email: { type: String, required: true },
         title: { type: String, required: true },
-        domain: { type: String, required: true },
+        domain: {
+            type: String,
+            required: true,
+            validate: {
+                validator: function (v) {
+                    return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
+                },
+                message: (props) => `${props.value} is not a valid URL!`,
+            },
+        },
         tag: { type: String, required: true, unique: true },
         content: { type: String, required: true },
     },
@@ -36,25 +45,29 @@ const blogSchema = new mongoose.Schema(
 const Blog = mongoose.model('Blog', blogSchema);
 
 const updateAuthorYaml = async (authorData) => {
-    const authorYamlPath = path.join(__dirname, 'authors.yml');
+    const authorYamlPath = path.join(__dirname, 'blog', 'authors.yml');
     let authors = {};
 
     try {
+        // Read the existing content
         const existingContent = await fs.readFile(authorYamlPath, 'utf8');
         authors = yaml.load(existingContent) || {};
     } catch (error) {
-        if (error.code !== 'ENOENT') throw error;
+        if (error.code !== 'ENOENT') throw error; // Ignore file-not-found errors
     }
 
+    // Add or update the new author
     authors[authorData.id] = {
         name: authorData.name,
         title: authorData.title,
-        url: authorData.url || '',
-        image_url: authorData.image_url
+        url: authorData.url && authorData.url.trim() !== '' ? authorData.url : '#', // Default to '#' if empty
+        image_url: authorData.image_url,
     };
 
-    await fs.writeFile(authorYamlPath, yaml.dump(authors));
+    // Write the updated content back to the file
+    await fs.writeFile(authorYamlPath, yaml.dump(authors), 'utf8');
 };
+
 
 app.post('/api/submit-blog', async (req, res) => {
     try {
@@ -89,22 +102,26 @@ app.get('/api/get-blogs', async (req, res) => {
 
 app.post('/api/accept-blog', async (req, res) => {
     try {
-        const { _id, markdown, authorYaml } = req.body;
+        const { _id, markdown, authorYaml, tag } = req.body;
 
-        // Save markdown file
-        const blogPath = path.join(__dirname, 'blogs', `${req.body.tag}.md`);
-        await fs.mkdir(path.join(__dirname, 'blogs'), { recursive: true });
+        // Sanitize filename
+        const safeTag = tag.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+
+        // Save markdown file to 'blog' folder
+        const blogPath = path.join(__dirname, 'blog', `${safeTag}.md`);
+        await fs.mkdir(path.join(__dirname, 'blog'), { recursive: true });
         await fs.writeFile(blogPath, markdown);
 
         // Update authors.yml
         await updateAuthorYaml(authorYaml);
 
-        // Remove from MongoDB
+        // Remove blog from MongoDB
         await Blog.findByIdAndDelete(_id);
 
-        res.json({ message: 'Blog accepted and saved successfully' });
+        res.json({ message: 'Blog accepted and saved successfully!' });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to accept blog' });
+        console.error('Error in accepting blog:', error);
+        res.status(500).json({ message: 'Failed to accept blog. Please try again.' });
     }
 });
 

@@ -2,9 +2,18 @@ admin:
   name: Blog Admin
   title: Creator
   image_url: https://via.placeholder.com/150
-
 test-author:
   name: Test Author
   title: Contributor
   url: https://example.com
+  image_url: https://via.placeholder.com/150
+mayank-rajeevkumar-shukla:
+  name: Mayank Rajeevkumar Shukla
+  title: Contributor
+  url: xyz.com
+  image_url: https://via.placeholder.com/150
+mayank-shukla:
+  name: Mayank Shukla
+  title: Contributor
+  url: '#'
   image_url: https://via.placeholder.com/150
