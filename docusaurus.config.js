@@ -1,45 +1,45 @@
 // @ts-check
-import { themes as prismThemes } from 'prism-react-renderer';
+import { themes as prismThemes } from "prism-react-renderer";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Blog',
-  tagline: 'Sharing Knowledge and Stories',
-  favicon: 'img/favicon.ico',
+  title: "My Blog",
+  tagline: "Sharing Knowledge and Stories",
+  favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: 'http://localhost', // Changed to localhost for development
-  baseUrl: '/',
+  url: "http://localhost", // Changed to localhost for development
+  baseUrl: "/",
 
   // GitHub pages deployment config
-  organizationName: 'your-org',
-  projectName: 'your-blog-repo',
+  organizationName: "your-org",
+  projectName: "your-blog-repo",
 
   // Changed to 'warn' to help with development
-  onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: "warn",
+  onBrokenMarkdownLinks: "warn",
 
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
 
   presets: [
     [
-      'classic',
+      "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: false,
         blog: {
-          routeBasePath: '/',
+          routeBasePath: "/",
           showReadingTime: true,
-          blogSidebarCount: 'ALL',
-          blogSidebarTitle: 'All Blog Posts',
+          blogSidebarCount: "ALL",
+          blogSidebarTitle: "All Blog Posts",
           // Update this to your actual GitHub repo or remove if not needed
-          editUrl: 'https://github.com/your-org/your-blog-repo/tree/main/',
+          editUrl: "https://github.com/your-org/your-blog-repo/tree/main/",
         },
         theme: {
-          customCss: ['./src/css/custom.css'],
+          customCss: ["./src/css/custom.css"],
         },
       }),
     ],
@@ -48,66 +48,71 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/social-card.jpg',
+      image: "img/social-card.jpg",
       navbar: {
-        title: 'My Blog',
+        title: "My Blog",
         logo: {
-          alt: 'Blog Logo',
-          src: 'img/logo.svg',
+          alt: "Blog Logo",
+          src: "img/logo.svg",
         },
         items: [
           {
-            to: '/',
-            label: 'Home',
-            position: 'left',
+            to: "/",
+            label: "Home",
+            position: "left",
           },
           {
-            to: '/tags',
-            label: 'Tags',
-            position: 'left',
+            to: "/tags",
+            label: "Tags",
+            position: "left",
           },
           {
-            to: '/user',
-            label: 'User',
-            position: 'left',
+            to: "/user",
+            label: "User",
+            position: "left",
           },
           {
-            href: 'https://github.com/your-org/your-blog-repo',
-            label: 'GitHub',
-            position: 'right',
+            href: "https://github.com/your-org/your-blog-repo",
+            label: "GitHub",
+            position: "right",
           },
         ],
       },
       footer: {
-        style: 'dark',
+        style: "dark",
         links: [
           {
-            title: 'Explore',
+            title: "Explore",
             items: [
               {
-                label: 'Home',
-                to: '/',
+                label: "Home",
+                to: "/",
               },
               {
-                label: 'Tags',
-                to: '/tags',
+                label: "Tags",
+                to: "/tags",
               },
               {
-                label: 'User',
-                to: '/user',
+                label: "User",
+                to: "/user",
+              },
+              {
+                to: "/admin",
+                label: "Admin",
+                position: "right",
               },
             ],
           },
           {
-            title: 'Community',
+            title: "Community",
             items: [
               {
-                label: 'GitHub',
-                href: 'https://github.com/your-org/your-blog-repo',
+                label: "GitHub",
+                href: "https://github.com/your-org/your-blog-repo",
               },
               {
-                label: 'Discord',
-                href: 'https://discord.com/invite/Np6BjSaXud',
+                label: "Discord",
+                href: "https://discord.com/invite/Np6BjSaXud",
               },
             ],
           },

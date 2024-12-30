@@ -1,17 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Import CORS middleware
+const cors = require('cors');
+const fs = require('fs').promises;
+const path = require('path');
+const yaml = require('js-yaml');
 require('dotenv').config();
 
 const app = express();
 const PORT = 5000;
 
-// Middleware
 app.use(bodyParser.json());
-app.use(cors({ origin: 'http://localhost:3000' })); // Allow requests from your frontend origin
+app.use(cors({ origin: 'http://localhost:3000' }));
 
-// MongoDB Connection
 mongoose
     .connect(process.env.MONGO_URL, {
         useNewUrlParser: true,
@@ -20,7 +21,6 @@ mongoose
     .then(() => console.log('Connected to MongoDB'))
     .catch((error) => console.error('Error connecting to MongoDB:', error));
 
-// Mongoose Schema and Model
 const blogSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
@@ -35,36 +35,89 @@ const blogSchema = new mongoose.Schema(
 
 const Blog = mongoose.model('Blog', blogSchema);
 
-// Routes
+const updateAuthorYaml = async (authorData) => {
+    const authorYamlPath = path.join(__dirname, 'authors.yml');
+    let authors = {};
+
+    try {
+        const existingContent = await fs.readFile(authorYamlPath, 'utf8');
+        authors = yaml.load(existingContent) || {};
+    } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+    }
+
+    authors[authorData.id] = {
+        name: authorData.name,
+        title: authorData.title,
+        url: authorData.url || '',
+        image_url: authorData.image_url
+    };
+
+    await fs.writeFile(authorYamlPath, yaml.dump(authors));
+};
+
 app.post('/api/submit-blog', async (req, res) => {
     try {
         const { name, email, title, domain, tag, content } = req.body;
 
-        // Validate input
         if (!name || !email || !title || !domain || !tag || !content) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check for duplicate tag
         const existingBlog = await Blog.findOne({ tag });
         if (existingBlog) {
-            return res
-                .status(400)
-                .json({ message: 'Tag must be unique. A blog with this tag already exists.' });
+            return res.status(400).json({ message: 'Tag must be unique' });
         }
 
-        // Save blog
         const blog = new Blog({ name, email, title, domain, tag, content });
         await blog.save();
 
         res.status(200).json({ message: 'Blog submitted successfully!' });
     } catch (error) {
-        console.error('Error saving blog:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
-// Start Server
+app.get('/api/get-blogs', async (req, res) => {
+    try {
+        const blogs = await Blog.find({});
+        res.json(blogs);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch blogs' });
+    }
+});
+
+app.post('/api/accept-blog', async (req, res) => {
+    try {
+        const { _id, markdown, authorYaml } = req.body;
+
+        // Save markdown file
+        const blogPath = path.join(__dirname, 'blogs', `${req.body.tag}.md`);
+        await fs.mkdir(path.join(__dirname, 'blogs'), { recursive: true });
+        await fs.writeFile(blogPath, markdown);
+
+        // Update authors.yml
+        await updateAuthorYaml(authorYaml);
+
+        // Remove from MongoDB
+        await Blog.findByIdAndDelete(_id);
+
+        res.json({ message: 'Blog accepted and saved successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to accept blog' });
+    }
+});
+
+app.post('/api/reject-blog', async (req, res) => {
+    try {
+        const { blogId } = req.body;
+        await Blog.findByIdAndDelete(blogId);
+        res.json({ message: 'Blog rejected successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to reject blog' });
+    }
+});
+
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
