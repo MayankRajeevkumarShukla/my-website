@@ -1,9 +1,21 @@
-// User.jsx
 import React, { useState } from 'react';
-import SimpleMDE from 'react-simplemde-editor';
-import 'simplemde/dist/simplemde.min.css';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 import slugify from 'slugify';
-import styles from './User.module.css';  // We'll create this CSS module
+import styles from './User.module.css';
+
+// Separate component for the editor to be used with BrowserOnly
+const MarkdownEditor = ({ value, onChange }) => {
+  // Import SimpleMDE dynamically inside BrowserOnly
+  const SimpleMDE = require('react-simplemde-editor').default;
+  require('simplemde/dist/simplemde.min.css');
+  
+  return (
+    <SimpleMDE
+      value={value}
+      onChange={onChange}
+    />
+  );
+};
 
 function User() {
   const [name, setName] = useState('');
@@ -31,27 +43,36 @@ function User() {
 
     try {
       const response = await fetch('http://localhost:5000/api/submit-blog', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(blogData),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(blogData),
       });
 
       if (!response.ok) {
-          const error = await response.json();
-          console.error('Submission error:', error.message);
-          alert(`Error: ${error.message}`);
-          return;
+        const error = await response.json();
+        console.error('Submission error:', error.message);
+        alert(`Error: ${error.message}`);
+        return;
       }
 
       const data = await response.json();
       console.log('Success:', data);
       alert(data.message);
-  } catch (error) {
+      
+      // Clear form after successful submission
+      setName('');
+      setEmail('');
+      setTitle('');
+      setDomain('');
+      setTag('');
+      setContent('');
+      
+    } catch (error) {
       console.error('Submission error:', error);
       alert('Something went wrong. Please try again.');
-  } finally {
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -71,6 +92,7 @@ function User() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            className={styles.input}
           />
         </div>
         <div className={styles.formGroup}>
@@ -80,6 +102,7 @@ function User() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className={styles.input}
           />
         </div>
         <div className={styles.formGroup}>
@@ -92,6 +115,7 @@ function User() {
               setTag(slugify(e.target.value, { lower: true }));
             }}
             required
+            className={styles.input}
           />
         </div>
         <div className={styles.formGroup}>
@@ -101,6 +125,7 @@ function User() {
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
             required
+            className={styles.input}
           />
         </div>
         <div className={styles.formGroup}>
@@ -109,15 +134,19 @@ function User() {
             type="text"
             value={tag}
             readOnly
-            className={styles.readOnlyInput}
+            className={`${styles.input} ${styles.readOnlyInput}`}
           />
         </div>
         <div className={styles.formGroup}>
           <label>Blog Content:</label>
-          <SimpleMDE
-            value={content}
-            onChange={(value) => setContent(value)}
-          />
+          <BrowserOnly>
+            {() => (
+              <MarkdownEditor
+                value={content}
+                onChange={(value) => setContent(value)}
+              />
+            )}
+          </BrowserOnly>
         </div>
         <button
           type="submit"
