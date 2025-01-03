@@ -72,6 +72,8 @@ const updateAuthorYaml = async (authorData) => {
 app.post('/api/submit-blog', async (req, res) => {
     try {
         const { name, email, title, domain, tag, content } = req.body;
+        
+        console.log('Received data:', { name, email, title, domain, tag, content });  // Add this
 
         if (!name || !email || !title || !domain || !tag || !content) {
             return res.status(400).json({ message: 'All fields are required' });
@@ -87,7 +89,8 @@ app.post('/api/submit-blog', async (req, res) => {
 
         res.status(200).json({ message: 'Blog submitted successfully!' });
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error' });
+        console.error('Detailed error:', error);  // Add this
+        res.status(500).json({ message: error.message || 'Internal Server Error' });  // Modified this
     }
 });
 
