@@ -89,7 +89,7 @@ app.post('/api/submit-blog', async (req, res) => {
 
         res.status(200).json({ message: 'Blog submitted successfully!' });
     } catch (error) {
-        console.error('Detailed error:', error);  // Add this
+        // console.error('Detailed error:', error);  // Add this
         res.status(500).json({ message: error.message || 'Internal Server Error' });  // Modified this
     }
 });
