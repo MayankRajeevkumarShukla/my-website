@@ -5,16 +5,10 @@ import styles from './User.module.css';
 
 // Separate component for the editor to be used with BrowserOnly
 const MarkdownEditor = ({ value, onChange }) => {
-  // Import SimpleMDE dynamically inside BrowserOnly
   const SimpleMDE = require('react-simplemde-editor').default;
   require('simplemde/dist/simplemde.min.css');
-  
-  return (
-    <SimpleMDE
-      value={value}
-      onChange={onChange}
-    />
-  );
+
+  return <SimpleMDE value={value} onChange={onChange} />;
 };
 
 function User() {
@@ -24,29 +18,59 @@ function User() {
   const [domain, setDomain] = useState('');
   const [tag, setTag] = useState('');
   const [content, setContent] = useState('');
+  const [imageLink, setImageLink] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  const cloudName = 'dkvmzgzd7'; // Your Cloudinary cloud name
+  const uploadPreset = 'DcodeBlock'; // Your Cloudinary upload preset
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setError(null);
+    setPreviewUrl(URL.createObjectURL(file)); // Show a local preview of the selected image
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error.message);
+      }
+
+      const data = await response.json();
+      setImageLink(data.secure_url); // Set the generated image URL
+    } catch (error) {
+      console.error('Image upload error:', error);
+      setError('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const submitBlog = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
-    const blogData = {
-      name,
-      email,
-      title,
-      domain,
-      tag,
-      content,
-    };
+    const blogData = { name, email, title, domain, tag, content };
 
     try {
       const response = await fetch('http://localhost:5000/api/submit-blog', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(blogData),
       });
 
@@ -58,9 +82,8 @@ function User() {
       }
 
       const data = await response.json();
-      console.log('Success:', data);
       alert(data.message);
-      
+
       // Clear form after successful submission
       setName('');
       setEmail('');
@@ -68,7 +91,8 @@ function User() {
       setDomain('');
       setTag('');
       setContent('');
-      
+      setImageLink('');
+      setPreviewUrl(null);
     } catch (error) {
       console.error('Submission error:', error);
       alert('Something went wrong. Please try again.');
@@ -80,11 +104,8 @@ function User() {
   return (
     <div className={styles.container}>
       <form onSubmit={submitBlog} className={styles.form}>
-        {error && (
-          <div className={styles.error}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.error}>{error}</div>}
+
         <div className={styles.formGroup}>
           <label>Name:</label>
           <input
@@ -95,6 +116,7 @@ function User() {
             className={styles.input}
           />
         </div>
+
         <div className={styles.formGroup}>
           <label>Email:</label>
           <input
@@ -105,6 +127,7 @@ function User() {
             className={styles.input}
           />
         </div>
+
         <div className={styles.formGroup}>
           <label>Title:</label>
           <input
@@ -118,6 +141,7 @@ function User() {
             className={styles.input}
           />
         </div>
+
         <div className={styles.formGroup}>
           <label>Domain:</label>
           <input
@@ -128,6 +152,7 @@ function User() {
             className={styles.input}
           />
         </div>
+
         <div className={styles.formGroup}>
           <label>Tag (auto-generated from title):</label>
           <input
@@ -137,17 +162,32 @@ function User() {
             className={`${styles.input} ${styles.readOnlyInput}`}
           />
         </div>
+
         <div className={styles.formGroup}>
           <label>Blog Content:</label>
           <BrowserOnly>
-            {() => (
-              <MarkdownEditor
-                value={content}
-                onChange={(value) => setContent(value)}
-              />
-            )}
+            {() => <MarkdownEditor value={content} onChange={(value) => setContent(value)} />}
           </BrowserOnly>
         </div>
+
+        <div className={styles.formGroup}>
+          <label>Upload Image:</label>
+          <input type="file" onChange={handleImageUpload} className={styles.input} />
+          {isUploading && <p>Uploading...</p>}
+          {previewUrl && (
+            <div className={styles.preview}>
+              <img src={previewUrl} alt="Preview" className={styles.previewImage} />
+            </div>
+          )}
+          {imageLink && (
+            <div className={styles.imageLink}>
+              <label>Image Link:</label>
+              <input type="text" value={imageLink} readOnly className={styles.input} />
+              <p>Copy this link and paste it into your blog content where needed.</p>
+            </div>
+          )}
+        </div>
+
         <button
           type="submit"
           disabled={isSubmitting}
