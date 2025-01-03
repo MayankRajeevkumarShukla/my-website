@@ -36,7 +36,8 @@ const blogSchema = new mongoose.Schema(
                 message: (props) => `${props.value} is not a valid URL!`,
             },
         },
-        tag: { type: String, required: true, unique: true },
+        slug: { type: String, required: true, unique: true },
+        tags: { type: [String], required: false },
         content: { type: String, required: true },
     },
     { timestamps: true }
@@ -49,48 +50,47 @@ const updateAuthorYaml = async (authorData) => {
     let authors = {};
 
     try {
-        // Read the existing content
         const existingContent = await fs.readFile(authorYamlPath, 'utf8');
         authors = yaml.load(existingContent) || {};
     } catch (error) {
-        if (error.code !== 'ENOENT') throw error; // Ignore file-not-found errors
+        if (error.code !== 'ENOENT') throw error;
     }
 
-    // Add or update the new author
     authors[authorData.id] = {
         name: authorData.name,
         title: authorData.title,
-        url: authorData.url && authorData.url.trim() !== '' ? authorData.url : '#', // Default to '#' if empty
+        url: authorData.url && authorData.url.trim() !== '' ? authorData.url : '#',
         image_url: authorData.image_url,
     };
 
-    // Write the updated content back to the file
     await fs.writeFile(authorYamlPath, yaml.dump(authors), 'utf8');
 };
 
-
 app.post('/api/submit-blog', async (req, res) => {
     try {
-        const { name, email, title, domain, tag, content } = req.body;
-        
-        console.log('Received data:', { name, email, title, domain, tag, content });  // Add this
+        const { name, email, title, domain, slug, tags, content } = req.body;
 
-        if (!name || !email || !title || !domain || !tag || !content) {
+        console.log('Received data:', { name, email, title, domain, slug, tags, content });
+
+        if (!name || !email || !title || !domain || !slug || !content) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const existingBlog = await Blog.findOne({ tag });
+        const existingBlog = await Blog.findOne({ slug });
         if (existingBlog) {
-            return res.status(400).json({ message: 'Tag must be unique' });
+            return res.status(400).json({ message: 'Slug must be unique' });
         }
 
-        const blog = new Blog({ name, email, title, domain, tag, content });
+        // Fix for tags: split and trim any extra spaces
+        const tagArray = tags.split(',').map(tag => tag.trim());
+
+        const blog = new Blog({ name, email, title, domain, slug, tags: tagArray, content });
         await blog.save();
 
         res.status(200).json({ message: 'Blog submitted successfully!' });
     } catch (error) {
-        // console.error('Detailed error:', error);  // Add this
-        res.status(500).json({ message: error.message || 'Internal Server Error' });  // Modified this
+        console.error('Detailed error:', error);
+        res.status(500).json({ message: error.message || 'Internal Server Error' });
     }
 });
 
@@ -105,13 +105,19 @@ app.get('/api/get-blogs', async (req, res) => {
 
 app.post('/api/accept-blog', async (req, res) => {
     try {
-        const { _id, markdown, authorYaml, tag } = req.body;
+        const { _id, markdown, authorYaml, slug } = req.body;
 
         // Sanitize filename
-        const safeTag = tag.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+        const safeSlug = slug || markdown.match(/title:\s*(.*)/i)[1].toLowerCase().replace(/[^a-z0-9-]/gi, '-');
+
+        console.log('Received slug:', safeSlug); // Log slug for debugging
+
+        if (!safeSlug) {
+            throw new Error('Slug is missing');
+        }
 
         // Save markdown file to 'blog' folder
-        const blogPath = path.join(__dirname, 'blog', `${safeTag}.md`);
+        const blogPath = path.join(__dirname, 'blog', `${safeSlug}.md`);
         await fs.mkdir(path.join(__dirname, 'blog'), { recursive: true });
         await fs.writeFile(blogPath, markdown);
 
@@ -127,6 +133,7 @@ app.post('/api/accept-blog', async (req, res) => {
         res.status(500).json({ message: 'Failed to accept blog. Please try again.' });
     }
 });
+
 
 app.post('/api/reject-blog', async (req, res) => {
     try {

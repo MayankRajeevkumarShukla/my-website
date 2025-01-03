@@ -15,8 +15,9 @@ function User() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [title, setTitle] = useState('');
-  const [domain, setDomain] = useState('');
-  const [tag, setTag] = useState('');
+  const [domain, setDomain] = useState(''); // Added domain field
+  const [slug, setSlug] = useState('');
+  const [tags, setTags] = useState('');
   const [content, setContent] = useState('');
   const [imageLink, setImageLink] = useState('');
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -60,12 +61,17 @@ function User() {
     }
   };
 
+  const copyImageLink = () => {
+    navigator.clipboard.writeText(imageLink);
+    alert('Image link copied to clipboard!');
+  };
+
   const submitBlog = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
-    const blogData = { name, email, title, domain, tag, content };
+    const blogData = { name, email, title, domain, slug, tags, content }; // Included domain in blogData
 
     try {
       const response = await fetch('http://localhost:5000/api/submit-blog', {
@@ -88,8 +94,9 @@ function User() {
       setName('');
       setEmail('');
       setTitle('');
-      setDomain('');
-      setTag('');
+      setDomain(''); // Clear domain
+      setSlug('');
+      setTags('');
       setContent('');
       setImageLink('');
       setPreviewUrl(null);
@@ -106,6 +113,29 @@ function User() {
       <form onSubmit={submitBlog} className={styles.form}>
         {error && <div className={styles.error}>{error}</div>}
 
+        {/* Image Upload Section */}
+        <div className={styles.formGroup}>
+          <label>Upload Image:</label>
+          <input type="file" onChange={handleImageUpload} className={styles.input} />
+          {isUploading && <p>Uploading...</p>}
+          {previewUrl && (
+            <div className={styles.preview}>
+              <img src={previewUrl} alt="Preview" className={styles.previewImage} />
+            </div>
+          )}
+          {imageLink && (
+            <div className={styles.imageLink}>
+              <label>Image Link:</label>
+              <input type="text" value={imageLink} readOnly className={styles.input} />
+              <button type="button" onClick={copyImageLink} className={styles.copyButton}>
+                Copy Link
+              </button>
+              <p>Copy this link and paste it into your blog content where needed.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Form Fields */}
         <div className={styles.formGroup}>
           <label>Name:</label>
           <input
@@ -135,7 +165,7 @@ function User() {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
-              setTag(slugify(e.target.value, { lower: true }));
+              setSlug(slugify(e.target.value, { lower: true }));
             }}
             required
             className={styles.input}
@@ -154,12 +184,18 @@ function User() {
         </div>
 
         <div className={styles.formGroup}>
-          <label>Tag (auto-generated from title):</label>
+          <label>Slug (auto-generated from title):</label>
+          <input type="text" value={slug} readOnly className={`${styles.input} ${styles.readOnlyInput}`} />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label>Tags (comma-separated):</label>
           <input
             type="text"
-            value={tag}
-            readOnly
-            className={`${styles.input} ${styles.readOnlyInput}`}
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="e.g. react, docusaurus, blog"
+            className={styles.input}
           />
         </div>
 
@@ -168,24 +204,6 @@ function User() {
           <BrowserOnly>
             {() => <MarkdownEditor value={content} onChange={(value) => setContent(value)} />}
           </BrowserOnly>
-        </div>
-
-        <div className={styles.formGroup}>
-          <label>Upload Image:</label>
-          <input type="file" onChange={handleImageUpload} className={styles.input} />
-          {isUploading && <p>Uploading...</p>}
-          {previewUrl && (
-            <div className={styles.preview}>
-              <img src={previewUrl} alt="Preview" className={styles.previewImage} />
-            </div>
-          )}
-          {imageLink && (
-            <div className={styles.imageLink}>
-              <label>Image Link:</label>
-              <input type="text" value={imageLink} readOnly className={styles.input} />
-              <p>Copy this link and paste it into your blog content where needed.</p>
-            </div>
-          )}
         </div>
 
         <button

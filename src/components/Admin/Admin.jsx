@@ -26,13 +26,19 @@ function Admin() {
         setTags({ ...tags, [blogId]: newTags.split(',').map((tag) => tag.trim()) });
     };
 
+    const generateSlug = (title) => {
+        return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+    };
+
     const handleAccept = async (blog) => {
         try {
+            const blogSlug = blog.slug || generateSlug(blog.title);
+
             const blogMarkdown = `---
-slug: ${blog.tag}
+slug: ${blogSlug}
 title: ${blog.title}
 authors: [${blog.name.toLowerCase().replace(/\s+/g, '-')}]
-tags: [${(tags[blog._id] || []).join(', ')}]
+tags: [${(tags[blog._id] || blog.tags).join(', ')}]
 date: ${new Date().toISOString().split('T')[0]}
 ---
 
@@ -49,7 +55,7 @@ ${blog.content}`;
                 _id: blog._id,
                 markdown: blogMarkdown,
                 authorYaml,
-                tag: blog.tag,
+                slug: blogSlug,
             });
 
             alert(response.data.message);
@@ -71,6 +77,11 @@ ${blog.content}`;
 
     const handlePreview = (blog) => {
         setPreviewBlog(blog);
+    };
+
+    // Navigate to the main page
+    const goToMainPage = () => {
+        window.location.href = '/'; // Redirects to the homepage (you can adjust the URL if needed)
     };
 
     return (
@@ -97,7 +108,8 @@ ${blog.content}`;
                         <p><strong>Author:</strong> {blog.name}</p>
                         <p><strong>Email:</strong> {blog.email}</p>
                         <p><strong>Domain:</strong> {blog.domain}</p>
-                        <p><strong>Tag:</strong> {blog.tag}</p>
+                        <p><strong>Tags:</strong> {blog.tags.join(', ')}</p>
+                        <p><strong>Slug:</strong> {blog.slug}</p>
 
                         <div className={styles.tagInput}>
                             <label>Additional Tags (comma-separated):</label>
@@ -131,6 +143,10 @@ ${blog.content}`;
                     </div>
                 ))
             )}
+
+            <div className={styles.goToMainButton}>
+                <button onClick={goToMainPage}>Go to Main Page</button>
+            </div>
         </div>
     );
 }
